@@ -1,19 +1,56 @@
-import React from 'react';
+import React, { Component } from 'react'
 import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
   StatusBar,
+  PermissionsAndroid,
 } from 'react-native';
 
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
+import NetInfo from "@react-native-community/netinfo";
+import Geolocation from '@react-native-community/geolocation';
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
+
+
+export default class App extends Component {
+
+  async componentDidMount(){
+    try {
+       PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {title:'Need Permission',
+      messag:'Please allow location permission to see weather near you.'}
+      )
+    } catch (error) {
+      console.log(error)
+    }
+
+    NetInfo.fetch().then(state => {
+      if(state.isConnected) {
+       this.getCurrentWeather()
+      }else{
+     
+      }
+    })
+  }
+
+  async getCurrentWeather(){
+    Geolocation.getCurrentPosition(
+      (position) => {
+       this.props.getCurrentweather(position.coords.latitude,position.coords.longitude)
+        },
+      (error) => this.setState({ error: error.message }),
+      { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 }
+    );
+  }
+
+  render() {
+    return (
+      <View>
+        <StatusBar barStyle="dark-content" />
       <SafeAreaView>
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
@@ -21,9 +58,11 @@ const App: () => React$Node = () => {
           
         </ScrollView>
       </SafeAreaView>
-    </>
-  );
-};
+      </View>
+    )
+}
+      }
+
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -64,4 +103,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
