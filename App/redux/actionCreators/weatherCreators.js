@@ -14,8 +14,8 @@ const api = create({
         api
        .get(API.WEATHER_CURRENT+lat+'&lon='+long+'&appid='+API.KEY+'&units=metric')
        .then(response => {
-        if (response.cod === 200) {
-        dispatch(getCurrentWeatherSuccess(response))
+        if (response.data.cod === 200) {
+        dispatch(getCurrentWeatherSuccess(response.data))
       }else{
           console.log('response= ',response);
       }
@@ -33,13 +33,9 @@ export function getweatherForcast(lat,long){
       dispatch(getweatherForcastBegin());
       try {
         api
-       .get(API.WEATHER_FORECAST+lat+'&lon='+long+'&appid='+API.KEY+'&units=metric')
+       .get(API.WEATHER_FORECAST+lat+'&lon='+long+'&exclude=hourly,minutely,current,alerts&appid='+API.KEY+'&units=metric')
        .then(response => {
-        if (response.cod === 200) {
-        dispatch(getweatherForcastSuccess(response.list))
-      }else{
-          console.log('response= ',response);
-      }
+        dispatch(getweatherForcastSuccess(response.data.daily))
        }
     )
       } catch (error) {

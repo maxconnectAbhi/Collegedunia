@@ -1,7 +1,7 @@
 import WEATHER_TYPES from '../types/weatherTypes';
 
 const initialState = {
-    loading: false,
+    loading: true,
     error: null,
     currentWeatherData:[],
     weatherData: [],

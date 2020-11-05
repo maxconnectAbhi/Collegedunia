@@ -1,21 +1,21 @@
 import React, { Component } from 'react'
 import {
+  View,Text,Image,
   SafeAreaView,
   StyleSheet,
   ScrollView,
   StatusBar,
   PermissionsAndroid,
 } from 'react-native';
+import {connect} from 'react-redux';
 
-import {
-  Colors,
-} from 'react-native/Libraries/NewAppScreen';
 import NetInfo from "@react-native-community/netinfo";
 import Geolocation from '@react-native-community/geolocation';
+import { getCurrentweather,getweatherForcast } from './App/redux/actionCreators/weatherCreators';
 
 
 
-export default class App extends Component {
+ class App extends Component {
 
   async componentDidMount(){
     try {
@@ -41,6 +41,7 @@ export default class App extends Component {
     Geolocation.getCurrentPosition(
       (position) => {
        this.props.getCurrentweather(position.coords.latitude,position.coords.longitude)
+       this.props.getweatherForcast(position.coords.latitude,position.coords.longitude)
         },
       (error) => this.setState({ error: error.message }),
       { enableHighAccuracy: false, timeout: 200000, maximumAge: 1000 }
@@ -48,58 +49,75 @@ export default class App extends Component {
   }
 
   render() {
+    if(this.props.loading){
+      return(
+      <View style={styles.container}>
+      <Image style={{height:'40%',width:'40%'}} resizeMode='contain' source={require('./App/assets/loader.gif')}/>
+      </View>
+      )
+    }
+    else{
     return (
-      <View>
+      <View style={styles.container}>
         <StatusBar barStyle="dark-content" />
       <SafeAreaView>
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          
+          contentInsetAdjustmentBehavior="automatic">
+         <View style={styles.container}>
+          <Text style={styles.currentText}>{this.props.currentWeatherData?.main?.temp}</Text>
+          <Text style={styles.boldText}>{this.props.currentWeatherData?.name}</Text>
+          </View>
+          <View style={{flex:1}}>
+          <View style={styles.row}>
+          <Text style={styles.boldText}>{this.props.weatherData?.name}</Text>
+          <Text style={styles.boldText}>{this.props.weatherData?.name}</Text>
+          </View>
+
+          </View>
         </ScrollView>
       </SafeAreaView>
       </View>
     )
+    }
 }
       }
 
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  container: {
+    flex:1,backgroundColor:'#FFF',
+    justifyContent:'center',alignItems:'center'
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  currentText:{
+    fontSize:60,
+    fontWeight:'bold'
   },
-  body: {
-    backgroundColor: Colors.white,
+  boldText:{
+    fontWeight:'bold',
+    fontSize:22
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+  row:{
+    flexDirection:'row',
+    justifyContent:'space-around',
+    borderBottomWidth:1,
+    flex:1/5
+  }
+ 
 });
 
+
+const mapStateToProps = state => ({
+  loading:state.weather.loading,
+  currentWeatherData: state.weather.currentWeatherData,
+  weatherData: state.weather.weatherData,
+});
+
+const mapDispatchToProps = dispatch => ({
+  getCurrentweather:(lat,long) => dispatch(getCurrentweather(lat,long)) ,
+  getweatherForcast:(lat,long) => dispatch(getweatherForcast(lat,long)) 
+});
+
+export default  connect(
+    mapStateToProps,
+    mapDispatchToProps,
+  )(App)
